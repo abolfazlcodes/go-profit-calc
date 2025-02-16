@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"os"
+)
 
 // GOALS OF THE TASK:
 // 1) Get revenue, expenses, and tax rate from user
@@ -19,14 +23,23 @@ import "fmt"
 func main() {
 	fmt.Println("----- Welcome to Our Profit Calculator ------")
 
-	// get the user
-	var revenue float64
-	var expenses float64
-	var taxRate float64
+	revenue, revenueError := getValueFromUser("Revenue")
+	if revenueError != nil {
+		fmt.Println(revenueError)
+		panic("Sorry, something happened and the process went wrong!")
+	}
 
-	revenue = getValueFromUser("Revenue")
-	expenses = getValueFromUser("Expenses")
-	taxRate = getValueFromUser("Tax Rate")
+	expenses, expensesError := getValueFromUser("Expenses")
+	if expensesError != nil {
+		fmt.Println(expensesError)
+		panic("Sorry, something happened and the process went wrong!")
+	}
+
+	taxRate, taxRateError := getValueFromUser("Tax Rate")
+	if taxRateError != nil {
+		fmt.Println(taxRateError)
+		panic("Sorry, something happened and the process went wrong!")
+	}
 
 	// calculate values
 	ebt := calculateEBT(revenue, expenses)
@@ -35,15 +48,23 @@ func main() {
 
 	// print the results to the user
 	fmt.Printf(`EBT value is: %.2f, Profit value is: %.2f Ratio value is: %.2f`, ebt, profitValue, ratio)
+
+	// store data
+	writeToFile(ebt)
 }
 
-func getValueFromUser(label string) float64 {
+func getValueFromUser(label string) (float64, error) {
 	var inputValue float64
 
 	fmt.Printf(`Please provide the %v: `, label)
 	fmt.Scan(&inputValue)
 
-	return inputValue
+	// do input validations
+	if inputValue <= 0 {
+		return inputValue, errors.New("Invalid input! Please provide a positive number.")
+	}
+
+	return inputValue, nil
 }
 
 // formula: revenue - expenses
@@ -54,11 +75,16 @@ func calculateEBT(revenue float64, expenses float64) float64 {
 
 // formula: ebt * ( 1 - taxRate / 100)
 func calculateProfit(ebtValue float64, taxRate float64) float64 {
-	var result = ebtValue * (1 - ebtValue/100)
+	var result = ebtValue * (1 - taxRate/100)
 	return result
 }
 
 func calculateRatio(ebtValue float64, profitValue float64) float64 {
 	var result = ebtValue / profitValue
 	return result
+}
+
+func writeToFile(value float64) {
+	valueString := fmt.Sprint(value)
+	os.WriteFile(`result.txt`, []byte(valueString), 0644)
 }

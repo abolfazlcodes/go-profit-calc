@@ -50,7 +50,7 @@ func main() {
 	fmt.Printf(`EBT value is: %.2f, Profit value is: %.2f Ratio value is: %.2f`, ebt, profitValue, ratio)
 
 	// store data
-	writeToFile(ebt)
+	writeToFile(ebt, profitValue, ratio)
 }
 
 func getValueFromUser(label string) (float64, error) {
@@ -61,7 +61,7 @@ func getValueFromUser(label string) (float64, error) {
 
 	// do input validations
 	if inputValue <= 0 {
-		return inputValue, errors.New("Invalid input! Please provide a positive number.")
+		return 0, errors.New("Invalid input! Please provide a positive number.")
 	}
 
 	return inputValue, nil
@@ -84,7 +84,7 @@ func calculateRatio(ebtValue float64, profitValue float64) float64 {
 	return result
 }
 
-func writeToFile(value float64) {
-	valueString := fmt.Sprint(value)
-	os.WriteFile(`result.txt`, []byte(valueString), 0644)
+func writeToFile(ebtValue, profitValue, ratio float64) {
+	results := fmt.Sprintf("EBT: %.1f\nProfit: %.1f\nRatio: %.3f\n", ebtValue, profitValue, ratio)
+	os.WriteFile(`result.txt`, []byte(results), 0644)
 }
